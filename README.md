@@ -186,7 +186,7 @@ START with STEP 0.
 | Clean install into a **second** environment (import solution, bind connection, publish, run setup script) | Verified on v1.0.0: import succeeded, agent published, script completed, both paths tested. v1.0.1 changes only the closed-branch topic and was tested in the author's environment. |
 | Managed solution import | Exported and inspected; the unmanaged package is the one used in the install test |
 
-## Known limitations
+## Important info
 
 - **The phone number is not created** by the package. Add yours to the workstream's Voice channel.
 - **Operating hours are per queue, but the closed message is shared.** The out-of-hours voice message is a single Dynamics 365 automated message used by both queues. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) to change the wording or to give each queue its own message.
