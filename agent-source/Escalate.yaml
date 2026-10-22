@@ -1,0 +1,30 @@
+kind: AdaptiveDialog
+startBehavior: CancelOtherTopics
+beginDialog:
+  kind: OnEscalate
+  id: main
+  intent:
+    displayName: Escalate
+    includeInOnSelectIntent: false
+    triggerQueries:
+      - Talk to agent
+      - Talk to a person
+      - Talk to someone
+      - Talk to a representative
+      - Speak to a representative
+      - Customer service
+      - I need help from a person
+      - Connect me to a person
+
+  actions:
+    - kind: SendActivity
+      id: sendMessage_s39DCt
+      activity:
+        text:
+          - Let me connect you with the right team.
+        speak:
+          - Let me connect you with the right team.
+
+    - kind: BeginDialog
+      id: beginDialog_mainMenu
+      dialog: cr_salesandsupportivr.topic.MainMenu

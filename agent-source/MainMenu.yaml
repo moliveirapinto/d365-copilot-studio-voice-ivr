@@ -1,0 +1,86 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SetVariable
+      id: setVariable_initQueueName
+      variable: init:Global.QueueName
+      value: ""
+
+    - kind: SetVariable
+      id: setVariable_initQueueId
+      variable: init:Global.QueueId
+      value: ""
+
+    - kind: Question
+      id: question_menu
+      interruptionPolicy:
+        allowInterruption: false
+
+      variable: init:Topic.MenuChoice
+      prompt:
+        text:
+          - If you want to talk to sales, press 1 or say sales. If you want to talk to support, press 2 or say support.
+        speak:
+          - If you want to talk to sales, press 1 or say sales. If you want to talk to support, press 2 or say support.
+
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sales
+              displayName: Sales
+              dtmfKey: Num1
+
+            - id: Support
+              displayName: Support
+              dtmfKey: Num2
+
+          dtmfMultipleChoiceOptions:
+            generateMapping: true
+
+    - kind: ConditionGroup
+      id: conditionGroup_route
+      conditions:
+        - id: conditionItem_sales
+          condition: =Topic.MenuChoice = 'cr_salesandsupportivr.topic.MainMenu.main.question_menu'.Sales
+          actions:
+            - kind: SetVariable
+              id: setVariable_salesName
+              variable: Global.QueueName
+              value: Sales
+
+            - kind: BeginDialog
+              id: beginDialog_sales
+              dialog: cr_salesandsupportivr.topic.CheckHoursAndTransfer
+
+        - id: conditionItem_support
+          condition: =Topic.MenuChoice = 'cr_salesandsupportivr.topic.MainMenu.main.question_menu'.Support
+          actions:
+            - kind: SetVariable
+              id: setVariable_supportName
+              variable: Global.QueueName
+              value: Support
+
+            - kind: BeginDialog
+              id: beginDialog_support
+              dialog: cr_salesandsupportivr.topic.CheckHoursAndTransfer
+
+      elseActions:
+        - kind: SendActivity
+          id: sendActivity_invalid
+          activity:
+            text:
+              - Sorry, I didn't get a valid selection.
+            speak:
+              - Sorry, I didn't get a valid selection.
+
+        - kind: GotoAction
+          id: gotoAction_menu
+          actionId: question_menu
+
+inputType: {}
+outputType: {}

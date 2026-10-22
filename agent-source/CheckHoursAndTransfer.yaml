@@ -1,0 +1,206 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SetVariable
+      id: setVariable_initQueueClosed
+      variable: init:Topic.QueueClosed
+      value: =false
+
+    - kind: InvokeConnectorAction
+      id: invokeConnectorAction_queueLookup
+      displayName: Look up queue ID by name
+      input:
+        binding:
+          entityName: queues
+          fetchXml: |-
+            ="<fetch top='1'><entity name='queue'><attribute name='queueid' /><filter><condition attribute='name' operator='eq' value='" & Global.QueueName & "' /></filter></entity></fetch>"
+          organization: current
+
+      output:
+        kind: SingleVariableOutputBinding
+        variable: init:Topic.QueueLookup
+
+      connectionReference: cr_salesandsupportivr.shared_commondataserviceforapps.dataverse
+      connectionProperties:
+        mode: Maker
+
+      dynamicOutputSchema:
+        kind: Record
+        properties:
+          value:
+            order: 0
+            type:
+              kind: Table
+              properties:
+                queueid:
+                  order: 0
+                  type: String
+
+      operationId: ListRecordsWithOrganization
+
+    - kind: SetVariable
+      id: setVariable_queueId
+      variable: Global.QueueId
+      value: =Coalesce(Text(First(Topic.QueueLookup.value).queueid), "")
+
+    - kind: ConditionGroup
+      id: conditionGroup_queueFound
+      conditions:
+        - id: conditionItem_queueFound
+          condition: =Global.QueueId <> ""
+          actions:
+            - kind: InvokeConnectorAction
+              id: invokeConnectorAction_hours
+              displayName: Check queue operating hours
+              input:
+                binding:
+                  actionName: msdyn_ExpandOperatingHoursForEntityCollection
+                  item: "={msdyn_Start: Now(), msdyn_End: DateAdd(Now(), 1, TimeUnit.Minutes), msdyn_EntityCollection: [{'@odata.type': \"Microsoft.Dynamics.CRM.queue\", queueid: Global.QueueId}]}"
+                  organization: current
+
+              output:
+                kind: SingleVariableOutputBinding
+                variable: init:Topic.HoursResponse
+
+              connectionReference: cr_salesandsupportivr.shared_commondataserviceforapps.dataverse
+              connectionProperties:
+                mode: Maker
+
+              dynamicInputSchema:
+                properties:
+                  actionName:
+                    displayName: Action Name
+                    description: Choose an action
+                    isRequired: true
+                    order: 1
+                    dynamicValuesConfig:
+                      capability: List
+
+                    type: String
+
+                  item:
+                    displayName: Action parameters
+                    description: Action parameters
+                    order: 2
+                    type:
+                      kind: Record
+                      properties:
+                        msdyn_End:
+                          order: 0
+                          type: DateTime
+
+                        msdyn_EntityCollection:
+                          order: 1
+                          type:
+                            kind: Table
+                            properties:
+                              '@odata.type':
+                                order: 0
+                                type: String
+
+                              queueid:
+                                order: 1
+                                type: String
+
+                        msdyn_Start:
+                          order: 2
+                          type: DateTime
+
+                  organization:
+                    displayName: Environment
+                    description: Choose an environment
+                    isRequired: true
+                    order: 0
+                    dynamicValuesConfig:
+                      capability: List
+
+                    type: String
+
+              dynamicOutputSchema:
+                kind: Record
+                properties:
+                  msdyn_Result:
+                    order: 0
+                    type: String
+
+              requestTimeoutInMilliseconds: 120000
+              operationId: PerformUnboundActionWithOrganization
+
+            - kind: SetVariable
+              id: setVariable_queueClosed
+              variable: Topic.QueueClosed
+              value: =IsBlank(Find("Available", Topic.HoursResponse.msdyn_Result))
+
+    - kind: ConditionGroup
+      id: conditionGroup_hours
+      conditions:
+        - id: conditionItem_closed
+          condition: =Topic.QueueClosed = true
+          actions:
+            - kind: InvokeConnectorAction
+              id: invokeConnectorAction_oohMessage
+              displayName: Get out-of-operating-hours voice message
+              input:
+                binding:
+                  entityName: msdyn_ocsystemmessages
+                  fetchXml: <fetch top="1"><entity name="msdyn_ocsystemmessage"><attribute name="msdyn_messagetext" /><filter><condition attribute="msdyn_name" operator="eq" value="MessageReceivedOutsideOperationHoursAck_PhoneCall" /></filter></entity></fetch>
+                  organization: current
+
+              output:
+                kind: SingleVariableOutputBinding
+                variable: init:Topic.OohResponse
+
+              connectionReference: cr_salesandsupportivr.shared_commondataserviceforapps.dataverse
+              connectionProperties:
+                mode: Maker
+
+              dynamicOutputSchema:
+                kind: Record
+                properties:
+                  value:
+                    order: 0
+                    type:
+                      kind: Table
+                      properties:
+                        msdyn_messagetext:
+                          order: 0
+                          type: String
+
+              operationId: ListRecordsWithOrganization
+
+            - kind: SetVariable
+              id: setVariable_oohMessage
+              variable: init:Topic.OohMessage
+              value: =Coalesce(Text(First(Topic.OohResponse.value).msdyn_messagetext), "Thank you for calling. You have reached us outside of our operating hours. Please call back during business hours.")
+
+            - kind: SendActivity
+              id: sendActivity_ooh
+              activity:
+                text:
+                  - "{Topic.OohMessage}"
+                speak:
+                  - "{Topic.OohMessage}"
+
+            - kind: EndConversation
+              id: endConversation_ooh
+
+      elseActions:
+        - kind: SendActivity
+          id: sendActivity_transfer
+          conversationOutcome: Escalated
+          activity:
+            text:
+              - Please hold while I connect you.
+            speak:
+              - Please hold while I connect you.
+
+        - kind: TransferConversationV2
+          id: transferConversationV2_queue
+          transferType:
+            kind: TransferToAgent
+            messageToAgent: IVR selection - {Global.QueueName}
+            context:
+              kind: AutomaticTransferContext
