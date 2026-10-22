@@ -51,6 +51,7 @@ You will see these in every screenshot.
 | `Topic.MenuChoice` | Main Menu | The question | The option the caller picked. |
 | `Topic.QueueClosed` | Check Hours | Check Hours | `true` when the queue has no available slot right now. |
 | `Topic.HoursResponse`, `Topic.QueueLookup`, `Topic.OohResponse`, `Topic.OohMessage` | Check Hours | Dataverse actions | Raw results and the message text. |
+| `Topic.AnythingElse` | Check Hours | The follow-up question | Yes (back to the menu) or No (goodbye). |
 
 ---
 
@@ -183,7 +184,22 @@ No `"Available"` slot in the next minute means the queue is closed.
 1. **List rows** from table `msdyn_ocsystemmessages` for the row named **`MessageReceivedOutsideOperationHoursAck_PhoneCall`**. This is the **voice automated message configured in Dynamics 365**. It is read live on every call, so changing it in Dynamics 365 changes what callers hear with no agent change and no republish.
 2. **Set variable** `Topic.OohMessage` = that message, or a built-in fallback sentence if none is found.
 3. **Message** that speaks `{Topic.OohMessage}`.
-4. **End conversation.** The call ends. **Nobody is transferred.**
+
+   ![Closed message and follow-up question](images/ui-12-closed-anything-else-question.png)
+
+4. **Question: "Is there anything else I can help you with?"** The call is **not dropped** after the message. This is a closed-list question (Yes = keypad 1, No = keypad 2) with interruptions off, saved to `Topic.AnythingElse`.
+
+   ![Yes and No options](images/ui-13-closed-yes-no-options.png)
+
+5. **Condition** on `AnythingElse`:
+   - **Yes**: **Go to another topic: Main Menu**. The menu is played again, so the caller can try the other queue (which may be open) or the same one.
+   - **All other conditions** (No): a **Message** "Thank you for calling. Goodbye." and then **End conversation**.
+
+   ![Goodbye and end](images/ui-14-closed-goodbye-and-end.png)
+
+   Silence is handled by the **Silence detection** topic, and an unrecognized answer is re-asked by the question itself, so the call only ends when the caller says no (or stays silent).
+
+**Nobody is transferred** on the closed branch.
 
 #### Open branch (All other conditions)
 
@@ -282,7 +298,7 @@ The transfer carries the message **"IVR selection - Sales"** (or Support), so th
 
 | Decision | Reason |
 |---|---|
-| **Check hours in the IVR, not only in Dynamics 365** | Dynamics 365 would still accept the call and then handle the closed queue itself. Checking first lets the IVR end the call cleanly and say the message, so nobody enters a queue with no one working. |
+| **Check hours in the IVR, not only in Dynamics 365** | Dynamics 365 would still accept the call and then handle the closed queue itself. Checking first lets the IVR say the message and keep helping the caller (replay the menu or say goodbye), so nobody enters a queue with no one working. |
 | **Use the built-in hours action** | Dynamics 365 already knows the calendar rules, holidays and time zones. Re-implementing that in the agent would be fragile. |
 | **Read the message from Dynamics 365** | One place to edit wording, no republish. |
 | **Look queues up by name** | Same package works in any environment. |

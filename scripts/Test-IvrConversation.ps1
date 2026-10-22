@@ -10,7 +10,8 @@
   What you will see:
     - queue OPEN  : "Please hold while I connect you." followed by a handoff.initiate event whose
                     payload contains QueueName (this is what D365 routes on)
-    - queue CLOSED: the D365 out-of-operating-hours message, then endOfConversation
+    - queue CLOSED: the D365 out-of-operating-hours message, then "Is there anything else I can help you with?".
+                    Pass several turns to answer it, e.g. -Say Sales,No (goodbye and end) or -Say Sales,Yes,Support (menu replays)
   Keypad presses (DTMF) cannot be simulated in text, so type the option name instead.
   Real DTMF and the transfer into D365 need a real call to your phone number.
 
@@ -24,9 +25,10 @@
 param(
   [Parameter(Mandatory)][string]$EnvironmentId,
   [string]$BotSchemaName = 'cr_salesandsupportivr',
-  [string]$Say = 'Sales'
+  [string[]]$Say = @('Sales')
 )
 $ErrorActionPreference = 'Stop'
+$Say = @($Say | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 $hex = $EnvironmentId -replace '-', ''
 $apiHost = "$($hex.Substring(0, $hex.Length - 2)).$($hex.Substring($hex.Length - 2)).environment.api.powerplatform.com"
 $pp = az account get-access-token --resource https://api.powerplatform.com --query accessToken -o tsv
@@ -59,6 +61,8 @@ function Send($body) {
 Write-Host '=== call connects'
 Send @{ type = 'event'; name = 'startConversation'; from = @{ id = 'tester' } }
 Read-Replies 14
-Write-Host "=== caller says: $Say"
-Send @{ type = 'message'; from = @{ id = 'tester' }; text = $Say }
-Read-Replies 22
+foreach ($turn in $Say) {
+  Write-Host "=== caller says: $turn"
+  Send @{ type = 'message'; from = @{ id = 'tester' }; text = $turn }
+  Read-Replies 20
+}

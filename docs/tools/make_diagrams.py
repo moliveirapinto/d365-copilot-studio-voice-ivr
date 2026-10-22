@@ -105,32 +105,32 @@ class Canvas:
 
 
 def architecture():
-    c = Canvas(1180, 720, 'Sales and Support Voice IVR: end-to-end call flow',
+    c = Canvas(1180, 770, 'Sales and Support Voice IVR: end-to-end call flow',
                'Copilot Studio agent (IVR) in front, Dynamics 365 Contact Center behind it')
     W = 250
     caller = c.card(150, 90, W, 'phone', 'Caller', ['Dials your phone number', 'Hears: "Press 1 or say sales, press 2 or say support"'])
     ws = c.card(150, 210, W, 'd365', 'Voice workstream', ['Phone number is attached to the Voice channel', 'The IVR agent answers first'])
     bot = c.card(150, 330, W, 'start', 'Copilot Studio IVR agent', ['Main Menu collects 1/2 (keypad) or speech', 'Sets Global.QueueName = Sales or Support'])
-    chk = c.card(150, 460, W, 'connector', 'Check Hours And Transfer', ['1. Look up the queue ID by name', '2. Ask D365: is the queue open right now?', '3. If closed, read the D365 voice message'])
+    chk = c.card(150, 460, W, 'connector', 'Check hours', ['1. Look up the queue ID by name', '2. Ask D365: is the queue open right now?', '3. If closed, read the D365 voice message'])
     c.down(caller, ws)
     c.down(ws, bot)
     c.down(bot, chk)
 
-    closed = c.card(560, 440, 300, 'end', 'CLOSED', ['Plays the D365 automated message', 'MessageReceivedOutsideOperationHoursAck_PhoneCall', 'Ends the call. The caller is not transferred.'])
-    opn = c.card(560, 580, 300, 'transfer', 'OPEN', ['"Please hold while I connect you"', 'Transfer conversation to D365 and pass QueueName'])
+    closed = c.card(560, 440, 300, 'message', 'CLOSED', ['Plays the D365 automated message', 'MessageReceivedOutsideOperationHoursAck_PhoneCall', 'Then asks "anything else?". Yes replays the menu, No says goodbye. The caller is not transferred.'])
+    opn = c.card(560, 625, 300, 'transfer', 'OPEN', ['"Please hold while I connect you"', 'Transfer conversation to D365 and pass QueueName'])
     c.arrow([(275, 520), (330, 520), (330, 480), (410, 480)], 'closed', '#c50f1f', lx=-40, ly=-26)
-    c.arrow([(275, 545), (330, 545), (330, 625), (410, 625)], 'open', '#107c10', lx=-40, ly=8)
+    c.arrow([(275, 545), (330, 545), (330, 670), (410, 670)], 'open', '#107c10', lx=-40, ly=8)
 
     rule = c.card(960, 330, 340, 'rule', 'Routing rules: Route to Queue', ['QueueName == Sales -> Sales queue', 'QueueName == Support -> Support queue', 'Hit policy: first match. Fallback queue: Support'])
     sq = c.card(860, 480, 200, 'd365', 'Sales queue', ['Open Mon-Fri 8:00-12:00'])
     pq = c.card(1070, 480, 200, 'd365', 'Support queue', ['Open Mon-Fri 12:00-18:00'])
     rep = c.card(960, 590, 300, 'd365', 'Representative', ['Accepts the call in the Customer Service workspace'])
-    c.arrow([(710, 625), (760, 625), (760, 395), (790, 395)], 'QueueName', '#107c10', lx=-78, ly=130)
+    c.arrow([(710, 670), (760, 670), (760, 395), (790, 395)], 'QueueName', '#107c10', lx=-78, ly=130)
     c.arrow([(900, 420 + 0), (860, 420 + 0), (860, 480)])
     c.arrow([(1020, 420), (1070, 420), (1070, 480)])
     c.arrow([(860, 545), (860, 570), (960, 570), (960, 590)])
     c.arrow([(1070, 545), (1070, 570), (960, 570)])
-    c.tag(24, 680, 'The Dataverse connector (maker connection) is used only by the three lookups in Check Hours And Transfer. No flows, plugins or custom APIs.')
+    c.tag(24, 730, 'The Dataverse connector (maker connection) is used only by the three lookups in Check Hours And Transfer. No flows, plugins or custom APIs.')
     c.save('01-architecture.png')
 
 
@@ -159,7 +159,7 @@ def conv_start_menu():
 
 
 def check_hours():
-    c = Canvas(1260, 1190, 'Topic: Check Hours And Transfer', 'cr_salesandsupportivr.topic.CheckHoursAndTransfer. All three Dataverse actions use the maker connection, so callers never sign in.')
+    c = Canvas(1260, 1540, 'Topic: Check Hours And Transfer', 'cr_salesandsupportivr.topic.CheckHoursAndTransfer. All three Dataverse actions use the maker connection, so callers never sign in.')
     W = 430
     cx = 330
     n0 = c.card(cx, 80, W, 'start', 'Check Hours And Transfer', ['Recognized intent (empty). Started from Main Menu.'])
@@ -185,10 +185,16 @@ def check_hours():
     c1 = c.card(X, 790, 340, 'connector', 'CLOSED: List rows: voice message', ['Table: msdyn_ocsystemmessages', 'Row: MessageReceivedOutsideOperationHoursAck_PhoneCall', 'Reads msdyn_messagetext'])
     c2 = c.card(X, 930, 340, 'variable', 'Set variable', ['Topic.OohMessage = the D365 message, or a built-in fallback sentence'])
     c3 = c.card(X, 1016, 340, 'message', 'Message', ['Speech and text: {Topic.OohMessage}'])
-    c4 = c.card(X, 1100, 340, 'end', 'End conversation', ['The call ends. Nobody is transferred.'])
+    c4 = c.card(X, 1102, 340, 'question', 'Question: anything else?', ['"Is there anything else I can help you with? Press 1 or say yes, press 2 or say no."', 'Closed list: Yes (keypad 1), No (keypad 2)'])
+    c5 = c.card(X, 1248, 340, 'condition', 'Condition', ['AnythingElse = Yes  ->  Go to Main Menu (the menu is played again)', 'else (No)  ->  continue below'])
+    c6 = c.card(X, 1360, 340, 'message', 'Message', ['"Thank you for calling. Goodbye."'])
+    c7 = c.card(X, 1440, 340, 'end', 'End conversation', ['The call ends only after the caller says no. Nobody is transferred.'])
     c.down(c1, c2)
     c.down(c2, c3)
     c.down(c3, c4)
+    c.down(c4, c5)
+    c.down(c5, c6)
+    c.down(c6, c7)
     c.arrow([(n7[2], 868), (n7[2] + 45, 868), (n7[2] + 45, 830), (X - 170, 830)], None, '#c50f1f')
     c.tag(n7[2] + 55, 876, 'yes: closed', '#fde7e9', '#c50f1f', '#750b1c')
 

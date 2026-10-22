@@ -184,8 +184,55 @@ beginDialog:
                 speak:
                   - "{Topic.OohMessage}"
 
-            - kind: EndConversation
-              id: endConversation_ooh
+            - kind: Question
+              id: question_anythingElse
+              interruptionPolicy:
+                allowInterruption: false
+
+              variable: init:Topic.AnythingElse
+              prompt:
+                text:
+                  - Is there anything else I can help you with? Press 1 or say yes, press 2 or say no.
+                speak:
+                  - Is there anything else I can help you with? Press 1 or say yes, press 2 or say no.
+
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: Yes
+                      displayName: Yes
+                      dtmfKey: Num1
+
+                    - id: No
+                      displayName: No
+                      dtmfKey: Num2
+
+                  dtmfMultipleChoiceOptions:
+                    generateMapping: true
+
+            - kind: ConditionGroup
+              id: conditionGroup_anythingElse
+              conditions:
+                - id: conditionItem_yes
+                  condition: =Topic.AnythingElse = 'cr_salesandsupportivr.topic.CheckHoursAndTransfer.main.question_anythingElse'.Yes
+                  actions:
+                    - kind: BeginDialog
+                      id: beginDialog_backToMenu
+                      dialog: cr_salesandsupportivr.topic.MainMenu
+
+              elseActions:
+                - kind: SendActivity
+                  id: sendActivity_goodbye
+                  activity:
+                    text:
+                      - Thank you for calling. Goodbye.
+                    speak:
+                      - Thank you for calling. Goodbye.
+
+                - kind: EndConversation
+                  id: endConversation_ooh
 
       elseActions:
         - kind: SendActivity

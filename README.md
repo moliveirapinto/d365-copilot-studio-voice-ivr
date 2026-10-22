@@ -5,7 +5,7 @@ A ready-to-install **Copilot Studio voice IVR** for **Dynamics 365 Contact Cente
 - answers a call and offers **"press 1 or say sales"** and **"press 2 or say support"**
 - checks the **operating hours of the chosen queue** before it transfers anything
 - if the queue is **open**, transfers the call to Dynamics 365 and routes it to the right queue (**Sales** or **Support**)
-- if the queue is **closed**, plays the **out-of-operating-hours voice message configured in Dynamics 365** and ends the call, so nobody is transferred to an empty queue
+- if the queue is **closed**, plays the **out-of-operating-hours voice message configured in Dynamics 365**, then **asks if there is anything else it can help with**: "yes" goes back to the menu, "no" says goodbye and ends the call. Nobody is transferred to an empty queue and the call is never dropped right after the message
 
 It uses only built-in pieces: no Power Automate flows, no plugins, no custom APIs, no Azure resources.
 
@@ -42,7 +42,7 @@ Full steps, prerequisites and the time zone table are in [docs/INSTALL.md](docs/
 1. The caller dials the number. The voice workstream hands the call to the **IVR agent first**.
 2. **Main Menu** asks the question and accepts keypad **1/2** or the spoken words **sales/support**. It stores the choice in `Global.QueueName`.
 3. **Check Hours And Transfer** looks up the queue by name, then asks Dynamics 365 (built-in action `msdyn_ExpandOperatingHoursForEntityCollection`) whether that queue has an available slot in the next minute.
-4. **Closed**: it reads the voice message `MessageReceivedOutsideOperationHoursAck_PhoneCall` from Dynamics 365, says it, and ends the call.
+4. **Closed**: it reads the voice message `MessageReceivedOutsideOperationHoursAck_PhoneCall` from Dynamics 365 and says it. It then asks **"Is there anything else I can help you with?"** (press 1 or say yes, press 2 or say no). **Yes** replays the menu so the caller can pick the other queue; **No** says goodbye and ends the call.
 5. **Open**: it says "Please hold" and runs **Transfer conversation**, which hands the call to Dynamics 365 and passes `QueueName`.
 6. In Dynamics 365 the **Route to Queue** ruleset reads `QueueName` and puts the call in the Sales or Support queue.
 
@@ -53,10 +53,11 @@ Full steps, prerequisites and the time zone table are in [docs/INSTALL.md](docs/
 | Check | Result |
 |---|---|
 | Real phone calls with keypad (DTMF) into the IVR, hours check, handoff to Dynamics 365 | Verified in the author's environment |
-| Simulated chat: Sales closed -> message played, call ended | Verified |
+| Simulated chat: Sales closed -> message played -> "anything else?" -> No -> goodbye and end | Verified |
+| Simulated chat: Sales closed -> message -> "anything else?" -> Yes -> menu replayed -> Sales -> message -> No -> end | Verified |
 | Simulated chat: Support open -> handoff event with `QueueName=Support` | Verified |
 | Invalid answer -> menu replayed | Verified |
-| Clean install into a **second** environment (import solution, bind connection, publish, run setup script) | Verified: import succeeded, agent published, script completed, both paths tested |
+| Clean install into a **second** environment (import solution, bind connection, publish, run setup script) | Verified on v1.0.0: import succeeded, agent published, script completed, both paths tested. v1.0.1 changes only the closed-branch topic and was tested in the author's environment. |
 | Managed solution import | Exported and inspected; the unmanaged package is the one used in the install test |
 
 ## Known limitations

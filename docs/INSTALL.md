@@ -94,11 +94,11 @@ Add the people who should take calls to the **Sales** and **Support** queues (Cu
 **Without a phone** (text simulation, both paths):
 
 ```powershell
-./scripts/Test-IvrConversation.ps1 -EnvironmentId <environment GUID> -Say Sales
+./scripts/Test-IvrConversation.ps1 -EnvironmentId <environment GUID> -Say Sales,No
 ./scripts/Test-IvrConversation.ps1 -EnvironmentId <environment GUID> -Say Support
 ```
 
-Closed queues play the Dynamics 365 message and end. Open queues print a `handoff.initiate` event containing `QueueName=...`.
+Closed queues play the Dynamics 365 message and then ask "anything else?": answer `Yes` to replay the menu or `No` to hear goodbye and end. Open queues print a `handoff.initiate` event containing `QueueName=...`.
 
 **With a phone**: call the number and try 1, 2, the words *sales* and *support*, an invalid key such as 3, and silence. Call **inside** and **outside** each queue's hours.
 
