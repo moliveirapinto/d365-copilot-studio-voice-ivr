@@ -1,5 +1,7 @@
 # Install
 
+> **Want an AI assistant to do all of this for you?** Paste the ready-made prompt from the [README](../README.md#let-an-ai-assistant-install-it-for-you) into Claude, Scout or a similar agent. The steps below are for doing it yourself.
+
 ## Prerequisites
 
 | Need | Details |
