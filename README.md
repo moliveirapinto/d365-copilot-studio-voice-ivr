@@ -87,7 +87,7 @@ HOW TO WORK
 
 STEP 0 - QUESTIONS (ask all in one message, then wait)
 1. Which environment: sandbox, developer, or production? Give me its URL (for example https://contoso.crm.dynamics.com, ending at ".dynamics.com" with no path, used exactly as I give it) and its name in Power Apps. If production, warn me and continue only after I answer "yes, production". A sandbox is recommended for a first try.
-2. Time zone for the operating hours. Default Eastern Time (US and Canada), code 35. Common codes: 4 Pacific, 10 Mountain, 20 Central, 35 Eastern, 85 GMT London. If mine is not listed, look it up in the environment (table timezonedefinitions) and confirm it with me.
+2. Time zone for the operating hours. The queue's own time zone decides whether it is open, never the caller's, so ask me where each team works. Default Eastern Time (US and Canada), code 35, for both queues. If Sales and Support are in different time zones, use -SalesTimeZoneCode and -SupportTimeZoneCode. Common codes: 4 Pacific, 10 Mountain, 20 Central, 35 Eastern, 85 GMT London. If mine is not listed, look it up in the environment (table timezonedefinitions) and confirm it with me. If I need separate queues per country, tell me this package ships one Sales and one Support queue and point me to docs/CONFIGURATION.md "Time zones, countries and holidays"; do not improvise changes to the agent without my approval.
 3. Operating hours: keep the defaults (Mon-Fri; Sales 08:00-12:00; Support 12:00-18:00) or give me different days and times (24-hour HH:mm)?
 4. Queue names: keep "Sales" and "Support"? (If I change them, the agent's Main Menu topic must be changed too. Warn me and explain before doing it.)
 5. Who owns the Dataverse connection the agent uses to look up queues, hours and the closed message? Recommend a service account for production. Tell me this connection runs for every caller.
@@ -120,7 +120,7 @@ STEP 4 - PUBLISH THE AGENT (Copilot Studio)
 
 STEP 5 - DYNAMICS 365 SETUP (run script B)
 1. Run, with my answers (add only the parameters that differ from the defaults):
-   pwsh -File ./Install-D365Setup.ps1 -EnvironmentUrl <ENV URL> -TimeZoneCode <code> [-SalesStart 08:00 -SalesEnd 12:00 -SupportStart 12:00 -SupportEnd 18:00 -DaysOfWeek MO,TU,WE,TH,FR] [-SalesQueueName Sales -SupportQueueName Support]
+   pwsh -File ./Install-D365Setup.ps1 -EnvironmentUrl <ENV URL> -TimeZoneCode <code> [-SalesTimeZoneCode <code> -SupportTimeZoneCode <code>] [-SalesStart 08:00 -SalesEnd 12:00 -SupportStart 12:00 -SupportEnd 18:00 -DaysOfWeek MO,TU,WE,TH,FR] [-SalesQueueName Sales -SupportQueueName Support]
 2. Expect every section to print and the end to say "Valid: Workstream is valid and ready for use." The agent must be published first or the AddBot step prints a warning; if so, publish, wait a minute, and re-run the script (it is safe to re-run).
 3. Verify in Copilot Service admin center (read-only): operating hours exist; queues Sales and Support are voice queues with the right hours; the workstream "Voice IVR Workstream" uses profile-based capacity with "Voice IVR inbound", fallback queue Support and the agent attached; the context variable QueueName (Text) is listed under Advanced settings > Context variables; the ruleset "Route to Queue" shows exactly "QueueName equals Sales" and "QueueName equals Support".
 4. If the script cannot be run or a part fails, do that part by hand with docs/MANUAL-D365-SETUP.md and tell me what you did.
@@ -190,9 +190,9 @@ START with STEP 0.
 
 - **The phone number is not created** by the package. Add yours to the workstream's Voice channel.
 - **Operating hours are per queue, but the closed message is shared.** The out-of-hours voice message is a single Dynamics 365 automated message used by both queues. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) to change the wording or to give each queue its own message.
-- **Queue names are matched by name.** The agent looks up queues called exactly `Sales` and `Support`. If you rename them, update the agent too (see configuration).
+- **Queue names are matched by name.** The agent looks up queues called exactly `Sales` and `Support`. If you rename them, update the agent too (see [Rename the queues](docs/CONFIGURATION.md#rename-the-queues)).
 - **The Dataverse connection is the maker's.** Callers are never asked to sign in. The connection owner's account runs the lookups, so use a service account in production.
-- **Days and time zone** are chosen when you run the setup script (default Monday to Friday). Holidays are managed in the operating hours calendar.
+- **Time zones follow the queue, never the caller.** Each queue's operating hours carry their own time zone and Dynamics 365 evaluates the call against it, so a caller in any country is judged by the queue's local hours. The setup script sets the zone for you (`-TimeZoneCode`, or a different one per queue with `-SalesTimeZoneCode` and `-SupportTimeZoneCode`). Default days are Monday to Friday and holidays live in each operating hours calendar. Several countries usually means one pair of queues per country: see [Time zones, countries and holidays](docs/CONFIGURATION.md#time-zones-countries-and-holidays).
 - The agent uses **classic orchestration** with a closed-list menu on purpose: a deterministic menu is faster and more predictable on a phone than a generative one.
 
 ## Repository layout

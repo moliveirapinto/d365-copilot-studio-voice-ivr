@@ -62,7 +62,8 @@ What it creates is listed in [HOW-IT-WORKS.md, section 7](HOW-IT-WORKS.md#7-the-
 | Parameter | Default | Notes |
 |---|---|---|
 | `-EnvironmentUrl` | (required) | Your org URL. |
-| `-TimeZoneCode` | `35` | Dataverse time zone code of the **operating hours**. See table below. |
+| `-TimeZoneCode` | `35` | Dataverse time zone code of the **operating hours** (used for both queues unless you set the two below). See table below. |
+| `-SalesTimeZoneCode` / `-SupportTimeZoneCode` | (uses `-TimeZoneCode`) | Give each queue **its own time zone**, for example Sales in London (`85`) and Support in Pacific (`4`). |
 | `-SalesStart` / `-SalesEnd` | `08:00` / `12:00` | 24-hour `HH:mm`. |
 | `-SupportStart` / `-SupportEnd` | `12:00` / `18:00` | |
 | `-DaysOfWeek` | `MO,TU,WE,TH,FR` | Two-letter days: `MO,TU,WE,TH,FR,SA,SU`. |

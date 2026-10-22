@@ -29,7 +29,9 @@ param(
   [string]$WorkstreamName = 'Voice IVR Workstream',
   [string]$SalesQueueName = 'Sales',
   [string]$SupportQueueName = 'Support',
-  [int]$TimeZoneCode = 35,                  # 35 = Eastern Time (US & Canada). See docs/INSTALL.md
+  [int]$TimeZoneCode = 35,                  # 35 = Eastern Time (US & Canada). Default for both queues. See docs/INSTALL.md
+  [int]$SalesTimeZoneCode = 0,              # optional: time zone of the Sales hours. 0 = use -TimeZoneCode
+  [int]$SupportTimeZoneCode = 0,            # optional: time zone of the Support hours. 0 = use -TimeZoneCode
   [string]$SalesStart = '08:00',
   [string]$SalesEnd = '12:00',
   [string]$SupportStart = '12:00',
@@ -56,14 +58,14 @@ function Invoke-Dv([string]$Method, [string]$Path, $Body = $null) {
 function Step($m) { Write-Host "==> $m" -ForegroundColor Cyan }
 
 # ---------------------------------------------------------------- operating hours
-function Ensure-OperatingHours([string]$Name, [string]$Start, [string]$End) {
+function Ensure-OperatingHours([string]$Name, [string]$Start, [string]$End, [int]$Tz) {
   $f = [uri]::EscapeDataString("msdyn_name eq '$Name'")
   $ex = (Invoke-Dv GET "msdyn_operatinghours?`$select=msdyn_operatinghourid&`$filter=$f").value
   if ($ex) { Write-Host "    operating hours '$Name' exists"; return $ex[0].msdyn_operatinghourid }
   $r = Invoke-Dv POST 'msdyn_CreateOperatingHours' @{
-    OperatingHoursName = $Name; TimeZoneCode = $TimeZoneCode; WorkStart = $Start; WorkEnd = $End
+    OperatingHoursName = $Name; TimeZoneCode = $Tz; WorkStart = $Start; WorkEnd = $End
     StartDate = (Get-Date).ToString('yyyy-MM-dd'); DaysOfWeek = $DaysOfWeek }
-  Write-Host "    created operating hours '$Name'"
+  Write-Host "    created operating hours '$Name' (time zone code $Tz)"
   $r.OperatingHourId
 }
 
@@ -98,8 +100,10 @@ function Ensure-Queue([string]$Name, [string]$HoursId) {
 }
 
 Step "Operating hours"
-$salesHours = Ensure-OperatingHours "$SalesQueueName Hours ($SalesStart-$SalesEnd)" $SalesStart $SalesEnd
-$supportHours = Ensure-OperatingHours "$SupportQueueName Hours ($SupportStart-$SupportEnd)" $SupportStart $SupportEnd
+if (-not $SalesTimeZoneCode) { $SalesTimeZoneCode = $TimeZoneCode }
+if (-not $SupportTimeZoneCode) { $SupportTimeZoneCode = $TimeZoneCode }
+$salesHours = Ensure-OperatingHours "$SalesQueueName Hours ($SalesStart-$SalesEnd)" $SalesStart $SalesEnd $SalesTimeZoneCode
+$supportHours = Ensure-OperatingHours "$SupportQueueName Hours ($SupportStart-$SupportEnd)" $SupportStart $SupportEnd $SupportTimeZoneCode
 
 Step "Queues"
 $salesQueueId = Ensure-Queue $SalesQueueName $salesHours

@@ -1,5 +1,34 @@
 # Configuration and customization
 
+## Time zones, countries and holidays
+
+**The queue's time zone decides everything, never the caller's.** Every operating hours record has its own time zone. When a call arrives, the agent asks Dynamics 365 whether the queue is open *right now*, and Dynamics 365 evaluates that moment in the queue's own time zone (daylight saving included). The agent sends the current moment as an exact UTC instant, so a caller in Tokyo, London or Toronto is judged by the same rule. (This was verified: a window one hour in the future correctly reported closed.) You never need to ask the caller where they are in order to get the hours right.
+
+### One company, several time zones: what to do
+
+| Situation | What to do |
+|---|---|
+| **One team in one time zone** (the default) | Run the script with `-TimeZoneCode` for that zone. |
+| **Sales and Support are in different time zones** (for example Sales in London, Support in Pacific) | Run the script with `-SalesTimeZoneCode 85 -SupportTimeZoneCode 4`. Each queue keeps its own zone. |
+| **One queue that is staffed in more than one time zone** (follow-the-sun, for example 8-12 London plus 8-12 New York) | Open the queue's operating hours record, go to **Working Hours**, and add one working-hours event per region. Each event has its own **Time zone** setting. |
+| **Separate teams per country** (for example Sales UK and Sales Germany, each with local hours and holidays) | Create **one queue per country**, each with its own operating hours in the country's time zone (copy the script call with different `-SalesQueueName` / `-SupportQueueName`, or create them by hand). The IVR then needs a way to send the caller to the right country queue: add a menu option per country in **Main Menu** (or ask "which country?" first), set `Global.QueueName` to that queue's exact name, and add a matching rule in **Route to Queue**. See [Change the menu wording or the options](#change-the-menu-wording-or-the-options). |
+
+Choosing **which queue** a caller belongs to (country, language, product) is a *routing* decision. Choosing **whether that queue is open** is always the queue's own hours, and that part needs no change for multiple countries.
+
+### Holidays
+
+Holidays belong to an **operating hours record**. Add them in the calendar with **New > Holiday**. A queue that uses that record is treated as closed on those days. For different national holidays, give each country its own queue and its own operating hours record.
+
+### The setup script and time zones
+
+| Parameter | Meaning |
+|---|---|
+| `-TimeZoneCode` | Time zone for both queues' hours (default `35`, Eastern). |
+| `-SalesTimeZoneCode` / `-SupportTimeZoneCode` | Override it per queue. |
+| `-DaysOfWeek` | Days both queues work (`MO,TU,WE,TH,FR`). For different days per queue, create the hours by hand or run the script twice and adjust in the admin center. |
+
+Time zone codes are in [INSTALL.md](INSTALL.md#time-zone-codes).
+
 ## Change the operating hours
 
 Operating hours live in Dynamics 365, not in the agent, so **no agent change is needed**.
