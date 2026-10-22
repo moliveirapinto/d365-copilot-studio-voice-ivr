@@ -19,7 +19,7 @@ It uses only built-in pieces: no Power Automate flows, no plugins, no custom API
 | **D365 setup script** | Creates operating hours, the Sales and Support queues, a voice workstream, the routing rules, and attaches the agent. | [`scripts/Install-D365Setup.ps1`](scripts/Install-D365Setup.ps1) |
 | **Test script** | Simulates a call as a text chat so you can test without a phone. | [`scripts/Test-IvrConversation.ps1`](scripts/Test-IvrConversation.ps1) |
 | **Topic source** | The agent's topics as readable YAML, for reference and code review. | [`agent-source/`](agent-source) |
-| **Documentation** | How every node works, install, configuration, troubleshooting. | [`docs/`](docs) |
+| **Documentation** | How every node works, install, manual Dynamics 365 setup, configuration, troubleshooting. | [`docs/`](docs) |
 
 ## Quick start
 
@@ -83,6 +83,7 @@ Full steps, prerequisites and the time zone table are in [docs/INSTALL.md](docs/
 └── docs/
     ├── HOW-IT-WORKS.md              Node-by-node explanation with screenshots
     ├── INSTALL.md
+    ├── MANUAL-D365-SETUP.md         Click-by-click Dynamics 365 setup (no script)
     ├── CONFIGURATION.md
     ├── TROUBLESHOOTING.md
     ├── images/

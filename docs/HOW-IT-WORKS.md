@@ -286,7 +286,11 @@ The built-in routing-rule action can create the ruleset and the rules but not th
 </condition>
 ```
 
-`liveworkitemcontext.<name>` is how a workstream context variable is addressed in a rule. You can open the ruleset in the admin center afterwards and edit it like any other.
+`liveworkitemcontext.<name>` is how a workstream context variable is addressed in a rule. You can open the ruleset in the admin center afterwards and edit it like any other. The rules then appear in the **Decision list** as `QueueName equals Sales` and `QueueName equals Support`:
+
+![Route to Queue decision list](images/ui-17-route-to-queue-rules.png)
+
+To create the context variable and the rules **by hand in the admin center** instead of with the script, follow [MANUAL-D365-SETUP.md](MANUAL-D365-SETUP.md).
 
 ### 7.5 What the representative sees
 

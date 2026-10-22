@@ -53,6 +53,8 @@ az login
 
 What it creates is listed in [HOW-IT-WORKS.md, section 7](HOW-IT-WORKS.md#7-the-dynamics-365-side). It is safe to re-run: items that already exist (matched by name) are reused.
 
+> **Prefer to click through it, or can't run scripts?** Follow [MANUAL-D365-SETUP.md](MANUAL-D365-SETUP.md) instead. It covers the operating hours, queues, workstream, the `QueueName` context variable and the routing rules.
+
 ### Parameters
 
 | Parameter | Default | Notes |
