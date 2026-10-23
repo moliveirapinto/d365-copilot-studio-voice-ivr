@@ -1,6 +1,8 @@
 # Install
 
 > **Want an AI assistant to do all of this for you?** Paste the ready-made prompt from the [README](../README.md#let-an-ai-assistant-install-it-for-you) into Claude, Scout or a similar agent. The steps below are for doing it yourself.
+>
+> **Prefer to build the Dynamics 365 side by hand?** Import only the agent from [`agent-only-solution/`](../agent-only-solution) (steps 1 and 2 below), then follow [MANUAL-D365-SETUP.md](MANUAL-D365-SETUP.md) instead of step 3. The options are compared in the [README](../README.md#three-ways-to-install).
 
 ## Prerequisites
 

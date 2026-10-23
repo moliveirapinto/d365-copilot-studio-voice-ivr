@@ -1,6 +1,6 @@
 # Manual Dynamics 365 setup (no script)
 
-[`scripts/Install-D365Setup.ps1`](../scripts/Install-D365Setup.ps1) does all of this for you. Use this guide if you cannot run scripts, if you want to understand each setting, or if you need to fix or extend one piece by hand.
+[`scripts/Install-D365Setup.ps1`](../scripts/Install-D365Setup.ps1) does all of this for you. Use this guide if you cannot run scripts, if you want to understand each setting, or if you need to fix or extend one piece by hand. It is also the second half of the **agent-only** option: import just the agent from [`agent-only-solution/`](../agent-only-solution), publish it, then follow this guide.
 
 Everything below is done in **Copilot Service admin center** (the Dynamics 365 app called *Admin center*). Steps marked **(verified)** were checked against the live admin center; where the screens have wording that can vary by release, the step says so.
 

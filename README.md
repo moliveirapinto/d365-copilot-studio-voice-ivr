@@ -15,13 +15,25 @@ It uses only built-in pieces: no Power Automate flows, no plugins, no custom API
 
 | Part | What it is | Where |
 |---|---|---|
-| **Copilot Studio agent** `Sales and Support IVR` | The IVR: menu, hours check, transfer. Packaged as a Dataverse solution. | [`solution/`](solution) (and in the [Release](../../releases)) |
+| **Copilot Studio agent** `Sales and Support IVR` | The IVR: menu, hours check, transfer. Packaged as a Dataverse solution that contains **only the agent** (no Dynamics 365 items). | [`agent-only-solution/`](agent-only-solution) (and in the [Release](../../releases)) |
 | **D365 setup script** | Creates operating hours, the Sales and Support queues, a voice workstream, the routing rules, and attaches the agent. | [`scripts/Install-D365Setup.ps1`](scripts/Install-D365Setup.ps1) |
 | **Test script** | Simulates a call as a text chat so you can test without a phone. | [`scripts/Test-IvrConversation.ps1`](scripts/Test-IvrConversation.ps1) |
 | **Topic source** | The agent's topics as readable YAML, for reference and code review. | [`agent-source/`](agent-source) |
 | **Documentation** | How every node works, install, manual Dynamics 365 setup, configuration, troubleshooting. | [`docs/`](docs) |
 
-## Quick start
+## Three ways to install
+
+The solution package contains **only the Copilot Studio agent**. Everything on the Dynamics 365 side (operating hours, queues, workstream, context variable, routing rules) is separate, so you choose how to create it:
+
+| Option | You do | Best for |
+|---|---|---|
+| **1. AI assistant does it all** | Paste one prompt ([below](#let-an-ai-assistant-install-it-for-you)) and answer its questions. | Anyone with Claude, Scout or a similar agent. |
+| **2. Solution + setup script** | Import the solution, publish, run `Install-D365Setup.ps1` (quick start below). | Admins comfortable with PowerShell. |
+| **3. Agent-only solution + build Dynamics 365 by hand** | Import **just the agent** from [`agent-only-solution/`](agent-only-solution), then build the Dynamics 365 side yourself with the click-by-click [manual setup guide](docs/MANUAL-D365-SETUP.md). | Teams that want full control or cannot run scripts. |
+
+Option 3 is the same agent package as the other options. The difference is that **you** create the Dynamics 365 items. The [agent-only README](agent-only-solution/README.md) lists exactly what the agent expects from Dynamics 365 (queue names, operating hours, the `QueueName` context variable, the routing rules).
+
+## Quick start (option 2)
 
 1. **Download** `SalesSupportVoiceIVR_unmanaged.zip` (or `_managed.zip`) from the [latest Release](../../releases/latest).
 2. **Import** it into your environment (make.powerapps.com > Solutions > Import) and pick a **Microsoft Dataverse** connection when asked.
@@ -201,7 +213,7 @@ START with STEP 0.
 .
 ├── README.md
 ├── LICENSE
-├── solution/                        Solution zips (also attached to each Release)
+├── agent-only-solution/             The agent solution zips + what it contains and expects (also attached to each Release)
 ├── scripts/
 │   ├── Install-D365Setup.ps1        Dynamics 365 side
 │   └── Test-IvrConversation.ps1     Text-chat call simulator
