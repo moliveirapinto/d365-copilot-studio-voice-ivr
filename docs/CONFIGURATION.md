@@ -87,7 +87,7 @@ Add the language in the agent, translate the messages in Conversation Start, Mai
 ## Production hardening checklist
 
 - Use a **service account** for the Dataverse connection and give it only the privileges it needs (read queues, read automated messages, run the operating-hours action).
-- Put the solution through your normal ALM (managed solution in test and production).
+- Put the solution through your normal ALM and source control (the package is unmanaged, so your own pipeline can export, version and promote it, and you can convert it to managed yourself if your policy requires it).
 - Add monitoring: Copilot Studio **Analytics**, and the Dynamics 365 Contact Center real-time reports.
 - Decide what **fail-open** means for you: today, if the queue cannot be found the call is transferred. If you prefer it to end with a message instead, change the first **Set variable** in Check Hours And Transfer to `Topic.QueueClosed = true` and handle the not-found case before the closed branch.
 - Test holidays, time zone changes, and the last minute before closing.

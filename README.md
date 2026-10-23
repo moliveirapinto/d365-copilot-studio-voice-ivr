@@ -35,7 +35,7 @@ Option 3 is the same agent package as the other options. The difference is that 
 
 ## Quick start (option 2)
 
-1. **Download** `SalesSupportVoiceIVR_unmanaged.zip` (or `_managed.zip`) from the [latest Release](../../releases/latest).
+1. **Download** `SalesSupportVoiceIVR_unmanaged.zip` from the [latest Release](../../releases/latest). The solution is **unmanaged**, so you can edit the agent after importing it.
 2. **Import** it into your environment (make.powerapps.com > Solutions > Import) and pick a **Microsoft Dataverse** connection when asked.
 3. **Publish** the agent in Copilot Studio.
 4. **Run** the D365 setup script:
@@ -195,8 +195,7 @@ START with STEP 0.
 | Simulated chat: Sales closed -> message -> "anything else?" -> Yes -> menu replayed -> Sales -> message -> No -> end | Verified |
 | Simulated chat: Support open -> handoff event with `QueueName=Support` | Verified |
 | Invalid answer -> menu replayed | Verified |
-| Clean install into a **second** environment (import solution, bind connection, publish, run setup script) | Verified on v1.0.0: import succeeded, agent published, script completed, both paths tested. v1.0.1 changes only the closed-branch topic and was tested in the author's environment. |
-| Managed solution import | Exported and inspected; the unmanaged package is the one used in the install test |
+| Clean install into a **second** environment (import the unmanaged solution, bind connection, publish, run setup script) | Verified on v1.0.0: import succeeded, agent published, script completed, both paths tested. v1.0.1 changes only the closed-branch topic and was tested in the author's environment. |
 
 ## Important info
 

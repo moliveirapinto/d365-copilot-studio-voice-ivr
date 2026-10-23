@@ -20,7 +20,7 @@
 
 ## Step 1: Import the solution
 
-1. Download `SalesSupportVoiceIVR_unmanaged.zip` (to edit the agent) or `SalesSupportVoiceIVR_managed.zip` (to lock it) from the [latest Release](../../../releases/latest).
+1. Download `SalesSupportVoiceIVR_unmanaged.zip` from the [latest Release](../../../releases/latest). All solution packages in this repository are **unmanaged**, so you can open the agent in Copilot Studio and edit it.
 2. Go to <https://make.powerapps.com>, pick your environment, **Solutions > Import solution**, and upload the zip.
 3. When asked for the **connection reference** `Microsoft Dataverse (Sales and Support IVR)`, choose (or create) a **Microsoft Dataverse** connection and finish the import.
 

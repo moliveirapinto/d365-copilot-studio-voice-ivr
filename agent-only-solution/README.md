@@ -4,10 +4,9 @@ This folder contains **only the Copilot Studio agent**. Use it if you want to im
 
 | File | Use |
 |---|---|
-| `SalesSupportVoiceIVR_unmanaged.zip` | Import and edit the agent (recommended). |
-| `SalesSupportVoiceIVR_managed.zip` | Locked copy for test and production pipelines. |
+| `SalesSupportVoiceIVR_unmanaged.zip` | The solution. It is **unmanaged**, so you can open the agent in Copilot Studio and edit any topic. |
 
-The same two files are attached to every [Release](../../../releases). Current version: **1.0.1.0**.
+The same file is attached to every [Release](../../../releases). All solution packages in this repository are **unmanaged**. Current version: **1.0.1.0**.
 
 ## What is inside
 
@@ -52,7 +51,6 @@ Different queue names? Change the two literals in the **Main Menu** topic. See [
 
 ```
 6f5da5f80ed4c5f7b19d51beba04d655aee5fea7cef8c288c67646967e81461e  SalesSupportVoiceIVR_unmanaged.zip
-f79712fc2377469760f27f323c932752d376ebffa1e836f432569eb60ab2d86f  SalesSupportVoiceIVR_managed.zip
 ```
 
 Want everything done for you instead? Use the setup script or the AI assistant prompt in the [main README](../README.md).
